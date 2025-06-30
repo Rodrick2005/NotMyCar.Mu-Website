@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rodrick's Car Hub</title>
+  <link rel="icon" type="image/png" href="car--v1.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>🚗 Welcome to NotMyCAr.Mu Hub</h1>
+    <nav>
+      <a href="#">Home</a>
+      <a href="#add-car-section">Add Car</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <h2>Find Your Dream Car Today</h2>
+    <p>Browse through the latest cars in town.</p>
+    <video autoplay muted loop id="bg-video">
+      <source src="video/car-showcase.mp4" type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
+  </section>
+
+  <section id="car-list">
+    <h2>Featured Cars</h2>
+    <div class="car-container" id="carContainer"></div>
+  </section>
+
+  <section id="add-car-section">
+    <h2>Add a New Car</h2>
+    <form id="addCarForm">
+      <input type="text" id="name" placeholder="Car Name" required />
+      <input type="text" id="model" placeholder="Model Year" required />
+      <input type="text" id="price" placeholder="Price" required />
+      <input type="file" id="imageFile" accept="image/*" required />
+      <textarea id="description" placeholder="Description" required></textarea>
+      <button type="submit">Add Car</button>
+    </form>
+  </section>
+
+  <div class="chatbot" id="chatbot">
+    <div class="chat-header">Chat with us 💬</div>
+    <div class="chat-body" id="chatBody"></div>
+    <input type="text" id="chatInput" placeholder="Type your message..." />
+  </div>
+
+  <footer>
+    <p>&copy; 2025 Rodrick's Car Hub. All rights reserved.</p>
+  </footer>
+
+  <!-- JavaScript section -->
+  <script>
+    const storedCars = localStorage.getItem('cars');
+    let cars = storedCars ? JSON.parse(storedCars) : [];
+
+    function renderCars() {
+      const container = document.getElementById('carContainer');
+      container.innerHTML = '';
+      cars.forEach(car => {
+        const card = document.createElement('div');
+        card.className = 'car-card';
+        card.innerHTML = `
+          <img src="${car.image}" alt="${car.name}" />
+          <h3>${car.name}</h3>
+          <p><strong>Model:</strong> ${car.model}</p>
+          <p><strong>Price:</strong> ${car.price}</p>
+          <p>${car.description}</p>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    document.getElementById('addCarForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const fileInput = document.getElementById('imageFile');
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+
+      reader.onloadend = function () {
+        const newCar = {
+          id: cars.length + 1,
+          name: document.getElementById('name').value,
+          model: document.getElementById('model').value,
+          price: document.getElementById('price').value,
+          image: reader.result,
+          description: document.getElementById('description').value
+        };
+        cars.push(newCar);
+        localStorage.setItem('cars', JSON.stringify(cars));
+        renderCars();
+        document.getElementById('addCarForm').reset();
+      };
+
+      if (file) {
+        reader.readAsDataURL(file);
+      }
+    });
+
+    renderCars();
+
+    // Chatbot
+    const chatInput = document.getElementById('chatInput');
+    const chatBody = document.getElementById('chatBody');
+
+    chatInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter' && chatInput.value.trim() !== '') {
+        const userMsg = chatInput.value;
+        appendMessage('You', userMsg);
+        generateReply(userMsg);
+        chatInput.value = '';
+      }
+    });
+
+    function appendMessage(sender, msg) {
+      const msgBox = document.createElement('div');
+      msgBox.className = 'chat-msg';
+      msgBox.innerHTML = `<strong>${sender}:</strong> ${msg}`;
+      chatBody.appendChild(msgBox);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    function generateReply(input) {
+      let reply = "I'm not sure I understand. Please rephrase.";
+      const lowerInput = input.toLowerCase();
+
+      if (lowerInput.includes('hello') || lowerInput.includes('hi')) {
+        reply = "Hi there! How can I assist you today?";
+      } else if (lowerInput.includes('car')) {
+        reply = "We have a wide range of cars. Use the 'Add Car' form or scroll on Featured cars to see them!";
+      } else if (lowerInput.includes('price')) {
+        reply = "You can find car prices below each car image.";
+      }
+
+      setTimeout(() => appendMessage('Bot', reply), 800);
+    }
+  </script>
+
+  <style>
+    .chatbot {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 280px;
+      background: rgba(7, 208, 212, 0.807);
+      border: 2px solid rgba(5, 95, 179, 0.312);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.032);
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-header {
+      background: rgba(13, 80, 173, 0.381);
+      color: rgb(42, 48, 7);
+      padding: 10px;
+      font-weight: bold;
+      text-align: center;
+    }
+    .chat-body {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      max-height: 200px;
+      font-size: 14px;
+    }
+    #chatInput {
+      border: none;
+      border-top: 1px solid #b7a1a1;
+      padding: 10px;
+      width: 100%;
+      outline: none;
+      font-size: 14px;
+    }
+    .chat-msg {
+      margin-bottom: 10px;
+    }
+  </style>
+</body>
+</html>
